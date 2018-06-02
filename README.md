@@ -43,5 +43,7 @@ IdenProf is a dataset containing images of identifiable professionals.
 
 <h3><b><u>References</u></b></h3>
 
- 1. Refik Can Malli, SqueezeNet v1.1 Implementation using Keras Functional framework 2.0, <br>
- <a href="https://github.com/rcmalli/keras-squeezenet/" >https://github.com/rcmalli/keras-squeezenet/</a> <br><br>
+ 1. T. Gebrue et al, Datasheets for Datasets, <br>
+ <a href="https://arxiv.org/abs/1803.09010" >https://arxiv.org/abs/1803.09010</a> <br><br>
+ 2. Kaiming H. et al, Deep Residual Learning for Image Recognition <br>
+ <a href="https://arxiv.org/abs/1512.03385" >https://arxiv.org/abs/1512.03385</a> <br><br>

@@ -23,8 +23,7 @@ TRAIN_ZIP_ONE = os.path.join(execution_path, "idenprof-train1.zip")
 TRAIN_ZIP_TWO = os.path.join(execution_path, "idenprof-train2.zip")
 TEST_ZIP = os.path.join(execution_path, "idenprof-test.zip")
 
-#DATASET_DIR = os.path.join(execution_path, "idenprof")
-DATASET_DIR = "C:\\Users\\Moses\\Documents\\Moses\\W7\\AI\\Custom Datasets\\IDENPROF\\idenprof-small-test\\idenprof"
+DATASET_DIR = os.path.join(execution_path, "idenprof")
 DATASET_TRAIN_DIR = os.path.join(DATASET_DIR, "train")
 DATASET_TEST_DIR = os.path.join(DATASET_DIR, "test")
 
@@ -323,5 +322,7 @@ def run_inference():
 
 
 #run_inference()
-train_network()
+# Above function call is to predict an image using pre-trained models
+#train_network()
+# Above function call is to train a ResNet50 network on the dataset.
 

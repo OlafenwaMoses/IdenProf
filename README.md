@@ -43,7 +43,7 @@ IdenProf is a dataset containing images of identifiable professionals.
 
 <h3><b><u>References</u></b></h3>
 
- 1. T. Gebrue et al, Datasheets for Datasets, <br>
+ 1. T. Gebru et al, Datasheets for Datasets, <br>
  <a href="https://arxiv.org/abs/1803.09010" >https://arxiv.org/abs/1803.09010</a> <br><br>
  2. Kaiming H. et al, Deep Residual Learning for Image Recognition <br>
  <a href="https://arxiv.org/abs/1512.03385" >https://arxiv.org/abs/1512.03385</a> <br><br>

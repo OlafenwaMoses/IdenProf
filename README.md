@@ -36,7 +36,7 @@ IdenProf is a dataset containing images of identifiable professionals.
 
   <b>>>> DATASHEET FOR IDENPROF</b> <br><br>
   For transparency and accountability on the collection and content of the IdenProf dataset, we have provided a comprehensive
-   datasheet on the dataset . The datasheet is based on the blueprint provided in the 2018 paper publication , "Datsheets for Datasets" by Timnit. et al.
+   datasheet on the dataset . The datasheet is based on the blueprint provided in the 2018 paper publication , "Datasheets for Datasets" by Timnit. et al.
     The datasheet is available via this <b><a href="idenprof-datasheet.pdf" >link</a></b>.
 
 <br>

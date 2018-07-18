@@ -9,7 +9,7 @@ import requests
 import shutil
 from zipfile import ZipFile
 import keras
-from keras.layers import Dense, Activation, Conv2D, MaxPool2D,  GlobalAvgPool2D, BatchNormalization, add, Input
+from keras.layers import Dense, Activation, Conv2D, MaxPool2D, GlobalAvgPool2D, BatchNormalization, add, Input
 from keras.models import Model
 from tensorflow.python.keras.preprocessing import image
 import numpy as np
@@ -19,70 +19,27 @@ execution_path = os.getcwd()
 
 # ----------------- The Section Responsible for Downloading the Dataset ---------------------
 
-TRAIN_ZIP_ONE = os.path.join(execution_path, "idenprof-train1.zip")
-TRAIN_ZIP_TWO = os.path.join(execution_path, "idenprof-train2.zip")
-TEST_ZIP = os.path.join(execution_path, "idenprof-test.zip")
 
+SOURCE_PATH = "https://github.com/OlafenwaMoses/IdenProf/releases/download/v1.0/idenprof-jpg.zip"
+FILE_DIR = os.path.join(execution_path, "idenprof-jpg.zip")
 DATASET_DIR = os.path.join(execution_path, "idenprof")
 DATASET_TRAIN_DIR = os.path.join(DATASET_DIR, "train")
 DATASET_TEST_DIR = os.path.join(DATASET_DIR, "test")
 
 
-
-
 def download_idenprof():
-    if (os.path.exists(DATASET_DIR) == False):
-        os.mkdir(DATASET_DIR)
-    if (os.path.exists(DATASET_TRAIN_DIR) == False):
-        os.mkdir(DATASET_TRAIN_DIR)
-    if (os.path.exists(DATASET_TEST_DIR) == False):
-        os.mkdir(DATASET_TEST_DIR)
+    if (os.path.exists(FILE_DIR) == False):
+        print("Downloading idenprof-jpg.zip")
+        data = requests.get(SOURCE_PATH,
+                            stream=True)
 
-    if (len(os.listdir(DATASET_TRAIN_DIR)) < 10):
-        if (os.path.exists(TRAIN_ZIP_ONE) == False):
-            print("Downloading idenprof-train1.zip")
-            data = requests.get("https://github.com/OlafenwaMoses/IdenProf/releases/download/v1.0/idenprof-train1.zip",
-                                stream=True)
+        with open(FILE_DIR, "wb") as file:
+            shutil.copyfileobj(data.raw, file)
+        del data
 
-            with open(TRAIN_ZIP_ONE, "wb") as file:
-                shutil.copyfileobj(data.raw, file)
-            del data
-
-        if (os.path.exists(TRAIN_ZIP_TWO) == False):
-            print("Downloading idenprof-train2.zip")
-            data = requests.get("https://github.com/OlafenwaMoses/IdenProf/releases/download/v1.0/idenprof-train2.zip",
-                                stream=True)
-
-            with open(TRAIN_ZIP_TWO, "wb") as file:
-                shutil.copyfileobj(data.raw, file)
-            del data
-
-        print("Extracting idenprof-train1.zip")
-        extract1 = ZipFile(TRAIN_ZIP_ONE)
-        extract1.extractall(DATASET_TRAIN_DIR)
-        extract1.close()
-
-        print("Extracting idenprof-train2.zip")
-        extract2 = ZipFile(TRAIN_ZIP_TWO)
-        extract2.extractall(DATASET_TRAIN_DIR)
-        extract2.close()
-
-    if (len(os.listdir(DATASET_TEST_DIR)) < 10):
-        if (os.path.exists(TEST_ZIP) == False):
-            print("Downloading idenprof-test.zip")
-
-            data = requests.get("https://github.com/OlafenwaMoses/IdenProf/releases/download/v1.0/idenprof-test.zip",
-                                stream=True)
-
-            with open(TEST_ZIP, "wb") as file:
-                shutil.copyfileobj(data.raw, file)
-            del data
-
-        print("Extracting idenprof-test.zip")
-        extract = ZipFile(TEST_ZIP)
-        extract.extractall(DATASET_TEST_DIR)
+        extract = ZipFile(FILE_DIR)
+        extract.extractall(execution_path)
         extract.close()
-
 
 
 # ----------------- The Section Responsible for Training ResNet50 on the IdenProf dataset ---------------------
@@ -98,7 +55,6 @@ if not os.path.isdir(save_direc):
     os.makedirs(save_direc)
 # Join the directory with the model file
 modelpath = os.path.join(save_direc, model_name)
-
 
 # Checkpoint to save best model
 checkpoint = ModelCheckpoint(filepath=modelpath,
@@ -132,53 +88,58 @@ def lr_schedule(epoch):
     print('Learning rate: ', lr)
     return lr
 
+
 lr_scheduler = LearningRateScheduler(lr_schedule)
 
 
-
-def resnet_module(input, channel_depth, strided_pool=False ):
+def resnet_module(input, channel_depth, strided_pool=False):
     residual_input = input
     stride = 1
 
-    if(strided_pool):
+    if (strided_pool):
         stride = 2
-        residual_input = Conv2D(channel_depth, kernel_size=1, strides=stride, padding="same",kernel_initializer="he_normal")(residual_input)
+        residual_input = Conv2D(channel_depth, kernel_size=1, strides=stride, padding="same",
+                                kernel_initializer="he_normal")(residual_input)
         residual_input = BatchNormalization()(residual_input)
 
-    input = Conv2D(int(channel_depth/4), kernel_size=1, strides=stride, padding="same",kernel_initializer="he_normal")(input)
+    input = Conv2D(int(channel_depth / 4), kernel_size=1, strides=stride, padding="same",
+                   kernel_initializer="he_normal")(input)
     input = BatchNormalization()(input)
     input = Activation("relu")(input)
 
-    input = Conv2D(int(channel_depth / 4), kernel_size=3, strides=1, padding="same",kernel_initializer="he_normal")(input)
+    input = Conv2D(int(channel_depth / 4), kernel_size=3, strides=1, padding="same", kernel_initializer="he_normal")(
+        input)
     input = BatchNormalization()(input)
     input = Activation("relu")(input)
 
-    input = Conv2D(channel_depth, kernel_size=1, strides=1, padding="same",kernel_initializer="he_normal")(input)
+    input = Conv2D(channel_depth, kernel_size=1, strides=1, padding="same", kernel_initializer="he_normal")(input)
     input = BatchNormalization()(input)
 
     input = add([input, residual_input])
     input = Activation("relu")(input)
 
     return input
-
 
 
 def resnet_first_block_first_module(input, channel_depth):
     residual_input = input
     stride = 1
 
-    residual_input = Conv2D(channel_depth, kernel_size=1, strides=1, padding="same",kernel_initializer="he_normal")(residual_input)
+    residual_input = Conv2D(channel_depth, kernel_size=1, strides=1, padding="same", kernel_initializer="he_normal")(
+        residual_input)
     residual_input = BatchNormalization()(residual_input)
 
-    input = Conv2D(int(channel_depth/4), kernel_size=1, strides=stride, padding="same",kernel_initializer="he_normal")(input)
+    input = Conv2D(int(channel_depth / 4), kernel_size=1, strides=stride, padding="same",
+                   kernel_initializer="he_normal")(input)
     input = BatchNormalization()(input)
     input = Activation("relu")(input)
 
-    input = Conv2D(int(channel_depth / 4), kernel_size=3, strides=stride, padding="same",kernel_initializer="he_normal")(input)
+    input = Conv2D(int(channel_depth / 4), kernel_size=3, strides=stride, padding="same",
+                   kernel_initializer="he_normal")(input)
     input = BatchNormalization()(input)
     input = Activation("relu")(input)
 
-    input = Conv2D(channel_depth, kernel_size=1, strides=stride, padding="same",kernel_initializer="he_normal")(input)
+    input = Conv2D(channel_depth, kernel_size=1, strides=stride, padding="same", kernel_initializer="he_normal")(input)
     input = BatchNormalization()(input)
 
     input = add([input, residual_input])
@@ -187,37 +148,38 @@ def resnet_first_block_first_module(input, channel_depth):
     return input
 
 
-def resnet_block(input, channel_depth, num_layers, strided_pool_first = False ):
+def resnet_block(input, channel_depth, num_layers, strided_pool_first=False):
     for i in range(num_layers):
         pool = False
-        if(i == 0 and strided_pool_first):
+        if (i == 0 and strided_pool_first):
             pool = True
         input = resnet_module(input, channel_depth, strided_pool=pool)
 
     return input
 
+
 def ResNet50(input_shape, num_classes=10):
     input_object = Input(shape=input_shape)
-    layers = [3,4,6,3]
+    layers = [3, 4, 6, 3]
     channel_depths = [256, 512, 1024, 2048]
 
-    output = Conv2D(64, kernel_size=7, strides=2, padding="same",kernel_initializer="he_normal")(input_object)
+    output = Conv2D(64, kernel_size=7, strides=2, padding="same", kernel_initializer="he_normal")(input_object)
     output = BatchNormalization()(output)
     output = Activation("relu")(output)
 
-    output = MaxPool2D(pool_size=(3,3), strides=(2,2))(output)
+    output = MaxPool2D(pool_size=(3, 3), strides=(2, 2))(output)
     output = resnet_first_block_first_module(output, channel_depths[0])
-
 
     for i in range(4):
         channel_depth = channel_depths[i]
         num_layers = layers[i]
 
         strided_pool_first = True
-        if(i == 0):
+        if (i == 0):
             strided_pool_first = False
             num_layers = num_layers - 1
-        output = resnet_block(output, channel_depth=channel_depth, num_layers=num_layers, strided_pool_first=strided_pool_first)
+        output = resnet_block(output, channel_depth=channel_depth, num_layers=num_layers,
+                              strided_pool_first=strided_pool_first)
 
     output = GlobalAvgPool2D()(output)
     output = Dense(num_classes)(output)
@@ -225,20 +187,18 @@ def ResNet50(input_shape, num_classes=10):
 
     model = Model(inputs=input_object, outputs=output)
 
-
     return model
 
 
-
 def train_network():
-
     download_idenprof()
+
+    print(os.listdir(os.path.join(execution_path, "idenprof")))
 
     optimizer = keras.optimizers.Adam(lr=0.01, decay=1e-4)
     batch_size = 32
     num_classes = 10
     epochs = 200
-    data_augmentation = True
 
     model = ResNet50((224, 224, 3), num_classes=num_classes)
     model.compile(loss="categorical_crossentropy", optimizer=optimizer, metrics=["accuracy"])
@@ -257,33 +217,25 @@ def train_network():
     test_generator = test_datagen.flow_from_directory(DATASET_TEST_DIR, target_size=(224, 224), batch_size=batch_size,
                                                       class_mode="categorical")
 
-
     model.fit_generator(train_generator, steps_per_epoch=int(9000 / batch_size), epochs=epochs,
                         validation_data=test_generator,
                         validation_steps=int(2000 / batch_size), callbacks=[checkpoint, lr_scheduler])
 
 
-
 # ----------------- The Section Responsible for Inference ---------------------
 CLASS_INDEX = None
 
-MODEL_PATH = os.path.join(execution_path, "resnet_model_ex-020_acc-0.651714.h5")
+MODEL_PATH = os.path.join(execution_path, "idenprof_061-0.7933.h5")
 JSON_PATH = os.path.join(execution_path, "idenprof_model_class.json")
 
 
-
-
-
 def preprocess_input(x):
-
-    x *= (1./255)
+    x *= (1. / 255)
 
     return x
 
 
 def decode_predictions(preds, top=5, model_json=""):
-
-
     global CLASS_INDEX
 
     if CLASS_INDEX is None:
@@ -298,6 +250,7 @@ def decode_predictions(preds, top=5, model_json=""):
             results.append(each_result)
 
     return results
+
 
 def run_inference():
     model = ResNet50(input_shape=(224, 224, 3), num_classes=10)
@@ -320,9 +273,6 @@ def run_inference():
         print(str(result[0]), " : ", str(result[1] * 100))
 
 
-
-#run_inference()
-# Above function call is to predict an image using pre-trained models
-#train_network()
-# Above function call is to train a ResNet50 network on the dataset.
+# run_inference()
+train_network()
 

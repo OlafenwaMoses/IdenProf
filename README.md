@@ -25,7 +25,7 @@ IdenProf is a dataset containing images of identifiable professionals.
 
   <b>>>> DOWNLOAD, TRAINING AND PREDICTION: </b> <br><br>
  The <b>IdenProf</b> dataset is provided for download in the <b>release</b> section of this repository.
- You can download the train and test images via this <a href="https://github.com/OlafenwaMoses/IdenProf/releases/" >link</a> . <br><br>
+ You can download the dataset via this <a href="https://github.com/OlafenwaMoses/IdenProf/releases/" >link</a> . <br><br>
 
  We have also provided a python codebase to download the images, train <b>ResNet50</b> on the images
   and perform prediction using a pretrained model (also using <b>ResNet50</b>) provided in the release section of this repository.
